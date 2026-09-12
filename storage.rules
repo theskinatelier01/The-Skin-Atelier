@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// =============================================================================
+// The Skin Atelier - Cloud Storage security rules
+//
+// Buckets are split by sensitivity:
+//   public/   - website media, served directly to visitors
+//   patients/ - clinical imagery, NEVER world-readable
+//   consent/  - signed consent documents, clinical staff only
+//   receipts/ - expense receipts, finance only
+//
+// A before/after photo is copied from patients/ into public/ by a server
+// action only after consent + admin approval. The original never becomes
+// readable, so revoking consent removes the public copy and nothing leaks.
+// =============================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function hasRole(roles) { return signedIn() && role() in roles; }
+    function isStaff() { return signedIn() && role() != null; }
+    function isAdmin() { return hasRole(['SUPER_ADMIN', 'ADMIN']); }
+    function isClinical() { return hasRole(['SUPER_ADMIN', 'ADMIN', 'DOCTOR']); }
+    function isMarketing() { return hasRole(['SUPER_ADMIN', 'ADMIN', 'MARKETING_MANAGER']); }
+    function isFinance() { return hasRole(['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT']); }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+    function underSize(mb) {
+      return request.resource.size < mb * 1024 * 1024;
+    }
+
+    // --- Website media -------------------------------------------------------
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isMarketing()
+                   && (isImage() || isVideo())
+                   && underSize(50);
+      allow delete: if isMarketing();
+    }
+
+    // --- Clinical imagery ----------------------------------------------------
+    // Private by default. Reads happen through short-lived signed URLs minted
+    // server-side, so even a leaked path is not enough on its own.
+    match /patients/{patientId}/{allPaths=**} {
+      allow read: if isClinical();
+      allow write: if isClinical() && isImage() && underSize(25);
+      allow delete: if isAdmin();
+    }
+
+    // --- Consent documents ---------------------------------------------------
+    match /consent/{patientId}/{allPaths=**} {
+      allow read: if isClinical();
+      allow write: if isClinical() && underSize(15);
+      allow delete: if isSuperAdminOnly();
+    }
+
+    function isSuperAdminOnly() { return hasRole(['SUPER_ADMIN']); }
+
+    // --- Finance -------------------------------------------------------------
+    match /receipts/{allPaths=**} {
+      allow read, write: if isFinance();
+      allow delete: if isAdmin();
+    }
+
+    // --- Staff / doctor portraits (published on the site) --------------------
+    match /staff/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage() && underSize(10);
+    }
+
+    // --- Everything else -----------------------------------------------------
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

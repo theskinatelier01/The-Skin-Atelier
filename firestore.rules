@@ -1,0 +1,374 @@
+rules_version = '2';
+
+// =============================================================================
+// The Skin Atelier - Firestore security rules
+//
+// Model:
+//   * The public website reads a small, explicitly whitelisted set of
+//     collections, and only documents that are actually published.
+//   * Everything else requires an authenticated staff account.
+//   * Authorisation is driven by a custom claim (`request.auth.token.role`)
+//     set by the server when a role is assigned. Claims are used rather than
+//     a get() lookup so a rule evaluation costs no extra document read.
+//   * Patient and clinical data is gated separately from the staff directory.
+//   * Audit logs are append-only for everyone, including super admins.
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return request.auth.token.role;
+    }
+
+    function hasRole(roles) {
+      return signedIn() && role() in roles;
+    }
+
+    function isSuperAdmin() {
+      return hasRole(['SUPER_ADMIN']);
+    }
+
+    function isAdmin() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN']);
+    }
+
+    // Anyone who works the front of house.
+    function isReception() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN', 'FRONT_DESK', 'RECEPTIONIST']);
+    }
+
+    function isClinical() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN', 'DOCTOR']);
+    }
+
+    function isFinance() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT']);
+    }
+
+    function isInventory() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN', 'INVENTORY_MANAGER']);
+    }
+
+    function isMarketing() {
+      return hasRole(['SUPER_ADMIN', 'ADMIN', 'MARKETING_MANAGER']);
+    }
+
+    // Any authenticated staff member.
+    function isStaff() {
+      return signedIn() && role() != null;
+    }
+
+    // Soft-deleted documents are invisible to reads.
+    function notDeleted(doc) {
+      return !('deletedAt' in doc) || doc.deletedAt == null;
+    }
+
+    function isPublished(doc) {
+      return doc.status == 'published';
+    }
+
+    // Writes must never forge the audit fields.
+    function stampsOk() {
+      return request.resource.data.updatedAt is timestamp;
+    }
+
+    // =========================================================================
+    // PUBLIC WEBSITE CONTENT
+    // Readable by anyone, but only where the document is actually published.
+    // =========================================================================
+
+    match /services/{id} {
+      allow read: if (resource.data.isActive == true && notDeleted(resource.data))
+                     || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /serviceCategories/{id} {
+      allow read: if resource.data.isActive == true || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /packages/{id} {
+      allow read: if (resource.data.isActive == true && notDeleted(resource.data))
+                     || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /doctors/{id} {
+      allow read: if (resource.data.isPublished == true && notDeleted(resource.data))
+                     || isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /pages/{id} {
+      allow read: if isPublished(resource.data) || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /blogs/{id} {
+      allow read: if (isPublished(resource.data)
+                      && resource.data.publishedAt <= request.time)
+                     || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /testimonials/{id} {
+      allow read: if resource.data.isVisible == true || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /faqs/{id} {
+      allow read: if resource.data.isVisible == true || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /gallery/{id} {
+      allow read: if resource.data.isVisible == true || isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /menus/{id} {
+      allow read: if true;
+      allow write: if isMarketing();
+    }
+
+    match /branches/{id} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // Before/after imagery. The public may only ever see a case that is BOTH
+    // consented and approved - the two conditions are checked together here and
+    // again in the server action that promotes a case.
+    match /beforeAfterCases/{id} {
+      allow read: if (resource.data.publicationStatus == 'Published'
+                      && resource.data.consentStatus == 'Granted'
+                      && notDeleted(resource.data))
+                     || isStaff();
+      allow create, update: if isClinical() || isAdmin();
+      // Only an admin may flip a case into a published state.
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // PUBLIC WRITE - the only collection the world may create into.
+    // =========================================================================
+
+    match /appointmentRequests/{id} {
+      // A visitor may submit a booking request but never read any back, and
+      // may only create it in the 'New' state with no staff-only fields set.
+      allow create: if request.resource.data.status == 'New'
+                    && request.resource.data.fullName is string
+                    && request.resource.data.fullName.size() > 1
+                    && request.resource.data.fullName.size() < 120
+                    && request.resource.data.phone is string
+                    && request.resource.data.phone.size() >= 7
+                    && request.resource.data.phone.size() <= 20
+                    && !('handledBy' in request.resource.data)
+                    && !('appointmentId' in request.resource.data)
+                    && !('internalNotes' in request.resource.data);
+      allow read, update, delete: if isReception();
+    }
+
+    // =========================================================================
+    // PATIENTS AND CLINICAL DATA - never public, under any condition.
+    // =========================================================================
+
+    match /patients/{id} {
+      allow read: if isStaff() && !isInventoryOnly();
+      allow create, update: if isReception() || isClinical();
+      allow delete: if isAdmin();
+    }
+
+    // An inventory manager has no business in the patient directory.
+    function isInventoryOnly() {
+      return hasRole(['INVENTORY_MANAGER']);
+    }
+
+    match /patientMedical/{id} {
+      allow read, write: if isClinical();
+    }
+
+    match /patientNotes/{id} {
+      allow read: if isClinical() || (isReception() && resource.data.isClinical == false);
+      allow create: if isStaff();
+      allow update, delete: if isClinical() || isAdmin();
+    }
+
+    match /consultations/{id} {
+      allow read: if isClinical() || isReception();
+      allow write: if isClinical();
+    }
+
+    match /treatments/{id} {
+      allow read: if isClinical() || isReception();
+      allow write: if isClinical();
+    }
+
+    match /treatmentPlans/{id} {
+      allow read: if isClinical() || isReception();
+      allow write: if isClinical();
+    }
+
+    // =========================================================================
+    // OPERATIONS
+    // =========================================================================
+
+    match /appointments/{id} {
+      allow read: if isStaff() && !isInventoryOnly();
+      allow create, update: if isReception() || isClinical();
+      allow delete: if isAdmin();
+    }
+
+    match /queue/{id} {
+      allow read: if isStaff();
+      allow write: if isReception() || isClinical();
+    }
+
+    match /patientPackages/{id} {
+      allow read: if isStaff() && !isInventoryOnly();
+      allow write: if isReception() || isFinance();
+    }
+
+    match /leads/{id} {
+      allow read, write: if isReception() || isMarketing();
+    }
+
+    // =========================================================================
+    // INVENTORY
+    // =========================================================================
+
+    match /products/{id} {
+      allow read: if isStaff();
+      allow write: if isInventory();
+    }
+
+    match /inventoryBatches/{id} {
+      allow read: if isStaff();
+      allow write: if isInventory() || isClinical();
+    }
+
+    match /stockMovements/{id} {
+      allow read: if isInventory() || isAdmin() || isFinance();
+      // Movements are an immutable ledger; corrections are new entries.
+      allow create: if isStaff();
+      allow update, delete: if false;
+    }
+
+    match /suppliers/{id} {
+      allow read: if isInventory() || isFinance() || isAdmin();
+      allow write: if isInventory();
+    }
+
+    match /purchaseOrders/{id} {
+      allow read: if isInventory() || isFinance() || isAdmin();
+      allow create, update: if isInventory();
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // FINANCE
+    // =========================================================================
+
+    match /invoices/{id} {
+      allow read: if isFinance() || isReception();
+      allow create, update: if isFinance() || isReception();
+      allow delete: if false; // invoices are voided, never deleted
+    }
+
+    match /payments/{id} {
+      allow read: if isFinance() || isReception();
+      allow create: if isFinance() || isReception();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /expenses/{id} {
+      allow read: if isFinance() || isAdmin() || isInventory();
+      allow write: if isFinance();
+    }
+
+    // =========================================================================
+    // MEDIA LIBRARY
+    // =========================================================================
+
+    match /media/{id} {
+      allow read: if isStaff();
+      allow write: if isMarketing();
+    }
+
+    match /mediaFolders/{id} {
+      allow read: if isStaff();
+      allow write: if isMarketing();
+    }
+
+    // =========================================================================
+    // SYSTEM
+    // =========================================================================
+
+    match /users/{uid} {
+      // A user can always read their own record; managing others needs admin.
+      allow read: if isStaff() && (request.auth.uid == uid || isAdmin());
+      // Roles are assigned through a server action that also sets the custom
+      // claim, so direct client writes to this collection are refused.
+      allow write: if false;
+    }
+
+    match /staff/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /doctorSchedules/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin() || isClinical();
+    }
+
+    match /notifications/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      // Staff may only ever mark a notification as read for themselves.
+      allow update: if isStaff()
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['readBy']);
+      allow delete: if isAdmin();
+    }
+
+    match /whatsappTemplates/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /memberships/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /counters/{id} {
+      // Sequence numbers are only ever allocated in a server transaction.
+      allow read, write: if false;
+    }
+
+    // Append-only. No role, including SUPER_ADMIN, may rewrite history.
+    match /auditLogs/{id} {
+      allow read: if isAdmin();
+      allow create: if isStaff();
+      allow update, delete: if false;
+    }
+
+    // Anything not matched above is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

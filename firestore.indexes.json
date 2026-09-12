@@ -1,0 +1,126 @@
+{
+  "indexes": [
+    { "collectionGroup": "services", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "serviceCategories", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "packages", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "doctors", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isPublished", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "testimonials", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isVisible", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "faqs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isVisible", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "gallery", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isVisible", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "blogs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "publishedAt", "order": "DESCENDING" }
+    ]},
+
+    { "collectionGroup": "beforeAfterCases", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "publicationStatus", "order": "ASCENDING" },
+      { "fieldPath": "consentStatus", "order": "ASCENDING" },
+      { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "beforeAfterCases", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "publicationStatus", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]},
+
+    { "collectionGroup": "appointments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "date", "order": "ASCENDING" },
+      { "fieldPath": "startTime", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "appointments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "branchId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "ASCENDING" },
+      { "fieldPath": "startTime", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "appointments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "doctorId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "appointments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "patientId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "appointmentRequests", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "queue", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "branchId", "order": "ASCENDING" },
+      { "fieldPath": "status", "order": "ASCENDING" }
+    ]},
+
+    { "collectionGroup": "consultations", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "patientId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "treatments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "patientId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+
+    { "collectionGroup": "products", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isLowStock", "order": "ASCENDING" },
+      { "fieldPath": "isActive", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "inventoryBatches", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "quantityRemaining", "order": "ASCENDING" },
+      { "fieldPath": "expiryDate", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "inventoryBatches", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "productId", "order": "ASCENDING" },
+      { "fieldPath": "quantityRemaining", "order": "ASCENDING" },
+      { "fieldPath": "expiryDate", "order": "ASCENDING" }
+    ]},
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "productId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]},
+
+    { "collectionGroup": "invoices", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "invoices", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "patientId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "payments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "invoiceId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "DESCENDING" }
+    ]},
+
+    { "collectionGroup": "leads", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "stage", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "notifications", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "targetRoles", "arrayConfig": "CONTAINS" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]},
+    { "collectionGroup": "auditLogs", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "module", "order": "ASCENDING" },
+      { "fieldPath": "at", "order": "DESCENDING" }
+    ]}
+  ],
+  "fieldOverrides": []
+}

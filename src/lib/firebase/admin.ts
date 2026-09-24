@@ -1,6 +1,13 @@
 import "server-only";
 
-import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
+import {
+  applicationDefault,
+  cert,
+  getApp,
+  getApps,
+  initializeApp,
+  type App,
+} from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getStorage, type Storage } from "firebase-admin/storage";
@@ -13,15 +20,46 @@ import { getStorage, type Storage } from "firebase-admin/storage";
  * the bundled default content (see `lib/cms/defaults.ts`) so the project can be
  * run and reviewed before a Firebase project exists. Any *write* still fails
  * loudly rather than silently pretending to succeed.
+ *
+ * Two ways to authenticate:
+ * - Service account key (FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY) for local
+ *   development and `npm run seed`.
+ * - Application Default Credentials on Firebase App Hosting, where the server
+ *   already runs as a service account, so no private key has to be stored.
+ *   App Hosting injects FIREBASE_CONFIG; FIREBASE_USE_ADC=true forces it too.
  */
 
-const projectId = process.env.FIREBASE_PROJECT_ID ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+/** FIREBASE_CONFIG is injected by Firebase App Hosting at build and run time. */
+function hostedFirebaseConfig(): { projectId?: string; storageBucket?: string } | null {
+  const raw = process.env.FIREBASE_CONFIG;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as { projectId?: string; storageBucket?: string };
+  } catch {
+    return null;
+  }
+}
+
+const hosted = hostedFirebaseConfig();
+
+const projectId =
+  process.env.FIREBASE_PROJECT_ID ??
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ??
+  hosted?.projectId;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 const storageBucket =
-  process.env.FIREBASE_STORAGE_BUCKET ?? process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  process.env.FIREBASE_STORAGE_BUCKET ??
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ??
+  hosted?.storageBucket;
 
-export const isAdminConfigured = Boolean(projectId && clientEmail && privateKey);
+const hasServiceAccountKey = Boolean(clientEmail && privateKey);
+const useApplicationDefault =
+  !hasServiceAccountKey && (hosted !== null || process.env.FIREBASE_USE_ADC === "true");
+
+export const isAdminConfigured = Boolean(
+  projectId && (hasServiceAccountKey || useApplicationDefault),
+);
 
 let cachedApp: App | null = null;
 
@@ -33,7 +71,10 @@ function adminApp(): App {
   cachedApp = getApps().length
     ? getApp()
     : initializeApp({
-        credential: cert({ projectId, clientEmail, privateKey }),
+        credential: useApplicationDefault
+          ? applicationDefault()
+          : cert({ projectId, clientEmail, privateKey }),
+        projectId,
         storageBucket,
       });
   return cachedApp;
@@ -76,7 +117,11 @@ export async function readOrFallback<T>(read: () => Promise<T>, fallback: T): Pr
   try {
     return await read();
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
+    // During `next build` the build machine may not be allowed to read
+    // Firestore. Fall back so the build succeeds; pages revalidate against the
+    // live data once the server is running.
+    const isBuilding = process.env.NEXT_PHASE === "phase-production-build";
+    if (process.env.NODE_ENV !== "production" || isBuilding) {
       console.warn("[firestore] read failed, using fallback content:", error);
       return fallback;
     }

@@ -1,0 +1,30 @@
+# Firebase App Hosting configuration
+# https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  # Scale to zero when idle so a quiet site costs nothing to keep running.
+  minInstances: 0
+  # Hard ceiling on concurrent servers, which also caps the worst-case bill.
+  maxInstances: 2
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+
+env:
+  # Canonical URLs, sitemap and Open Graph tags. Change this when the custom
+  # domain is connected.
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://skin-atelier--the-skin-atelier-d7d3d.asia-southeast1.hosted.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # The server authenticates to Firestore, Auth and Storage with App Hosting's
+  # own service account, so no private key is stored anywhere.
+  # (NEXT_PUBLIC_FIREBASE_* values are filled in from FIREBASE_WEBAPP_CONFIG
+  # in next.config.ts.)
+  - variable: FIREBASE_USE_ADC
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME

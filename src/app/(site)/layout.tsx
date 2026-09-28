@@ -26,6 +26,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <SiteHeader
         items={menus.primary?.items ?? []}
         clinicName={settings.clinicName}
+        logoUrl={settings.logoUrl}
         phone={settings.phone}
         announcement={settings.announcementBar}
       />

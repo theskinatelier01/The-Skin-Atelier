@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Clock, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Clock, MapPin, Phone } from "lucide-react";
+
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 
 import { PageHero } from "@/components/public/page-hero";
 import { BookingForm } from "@/components/public/booking-form";
@@ -66,7 +68,7 @@ export default async function BookPage() {
                     </a>
                   </ContactLine>
 
-                  <ContactLine icon={<MessageCircle className="size-4" />} label="WhatsApp">
+                  <ContactLine icon={<WhatsAppIcon className="size-4" />} label="WhatsApp">
                     <a
                       href={whatsappLink(
                         settings.whatsapp,

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,12 +20,14 @@ import type { MenuItem } from "@/types";
 export function SiteHeader({
   items,
   clinicName,
+  logoUrl,
   phone,
   heroPaths = ["/"],
   announcement,
 }: {
   items: MenuItem[];
   clinicName: string;
+  logoUrl?: string;
   phone: string;
   /** Routes that render a full-bleed hero behind the header. */
   heroPaths?: string[];
@@ -99,20 +102,40 @@ export function SiteHeader({
           >
             <Link
               href="/"
-              className={cn(
-                "font-display text-lg leading-none tracking-[0.02em] transition-colors lg:text-xl",
-                solid ? "text-ink" : "text-white",
-              )}
+              className="flex items-center gap-3"
               aria-label={`${clinicName} — home`}
             >
-              {clinicName}
+              {logoUrl && (
+                <Image
+                  src={logoUrl}
+                  alt=""
+                  width={96}
+                  height={96}
+                  priority
+                  className={cn(
+                    "h-9 w-auto shrink-0 transition-all duration-300 lg:h-11",
+                    // The mark is gold on transparency. Over a dark hero a soft
+                    // shadow separates it from the photograph without discarding
+                    // the brand colour, which inverting to white would.
+                    solid ? "" : "drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]",
+                  )}
+                />
+              )}
               <span
                 className={cn(
-                  "mt-1 block text-[0.5625rem] font-sans uppercase tracking-[0.32em] transition-colors",
-                  solid ? "text-ink-subtle" : "text-white/70",
+                  "font-display text-lg leading-none tracking-[0.02em] transition-colors lg:text-xl",
+                  solid ? "text-ink" : "text-white",
                 )}
               >
-                Islamabad
+                {clinicName}
+                <span
+                  className={cn(
+                    "mt-1 block text-[0.5625rem] font-sans uppercase tracking-[0.32em] transition-colors",
+                    solid ? "text-ink-subtle" : "text-white/70",
+                  )}
+                >
+                  Islamabad
+                </span>
               </span>
             </Link>
 

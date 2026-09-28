@@ -4,6 +4,7 @@ import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 import type { ClinicSettings, Menu } from "@/types";
 import { whatsappLink } from "@/lib/utils/format";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -140,8 +141,9 @@ export function SiteFooter({
               href={whatsappLink(settings.whatsapp, `Hello ${settings.clinicName}, I would like to enquire about a treatment.`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-sm border border-ivory-100/25 px-5 text-sm transition-colors hover:border-ivory-100/60 hover:bg-ivory-100/5"
+              className="mt-6 inline-flex h-11 items-center gap-2.5 rounded-sm border border-ivory-100/25 px-5 text-sm transition-colors hover:border-ivory-100/60 hover:bg-ivory-100/5"
             >
+              <WhatsAppIcon className="size-4 text-[#25D366]" />
               Message us on WhatsApp
             </a>
           </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 import { whatsappLink } from "@/lib/utils/format";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 
 /**
  * Floating WhatsApp action.
@@ -32,13 +32,15 @@ export function WhatsAppFab({ phone, clinicName }: { phone: string; clinicName: 
       tabIndex={visible ? 0 : -1}
       className={cn(
         "no-print fixed right-5 z-30 flex size-14 items-center justify-center rounded-full",
-        "bg-charcoal-900 text-ivory-100 shadow-lifted transition-all duration-400 ease-editorial",
-        "hover:bg-charcoal-800 focus-visible:outline-2 focus-visible:outline-offset-2",
+        // WhatsApp brand green: the affordance is only obvious if it looks like
+        // WhatsApp, so this deliberately sits outside the editorial palette.
+        "bg-[#25D366] text-white shadow-lifted transition-all duration-400 ease-editorial",
+        "hover:bg-[#1EBE5B] hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2",
         "bottom-[calc(1.25rem+env(safe-area-inset-bottom))]",
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0",
       )}
     >
-      <MessageCircle className="size-6" aria-hidden="true" />
+      <WhatsAppIcon className="size-7" />
     </a>
   );
 }

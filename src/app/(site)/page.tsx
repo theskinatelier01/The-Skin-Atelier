@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, MessageCircle, Phone, ShieldCheck, Sparkles, Star, Stethoscope } from "lucide-react";
+import { ArrowRight, CalendarCheck, Phone, ShieldCheck, Sparkles, Star, Stethoscope } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/primitives";
 import { Reveal } from "@/components/ui/reveal";
 import { EditorialImage } from "@/components/public/editorial-image";
 import { Hero } from "@/components/public/sections/hero";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 import { ServiceCard } from "@/components/public/sections/service-card";
 import { ConcernFinder } from "@/components/public/sections/concern-finder";
 import { Testimonials } from "@/components/public/sections/testimonials";
@@ -615,7 +616,7 @@ export default async function HomePage() {
                 size="lg"
                 variant="outline"
                 target="_blank"
-                icon={<MessageCircle />}
+                icon={<WhatsAppIcon className="size-4" />}
                 className="border-white/40 text-white hover:border-white hover:bg-white/10"
               >
                 WhatsApp us

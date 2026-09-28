@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
@@ -44,12 +45,22 @@ export function SiteFooter({
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Identity */}
           <div className="lg:col-span-4">
+            {settings.logoUrl && (
+              <Image
+                src={settings.logoUrl}
+                alt=""
+                width={112}
+                height={96}
+                className="mb-5 h-16 w-auto"
+              />
+            )}
             <p className="font-display text-2xl">{settings.clinicName}</p>
             <p className="mt-1 text-[0.625rem] uppercase tracking-[0.32em] text-ivory-100/50">
               {settings.tagline}
             </p>
             <p className="mt-6 max-w-xs text-sm leading-relaxed text-ivory-100/65">
-              Consultation-led dermatology and aesthetic medicine in the heart of Islamabad.
+              Islamabad&rsquo;s premier dermatology and aesthetic clinic, delivering science-backed
+              beauty treatments.
             </p>
 
             <div className="mt-7 flex gap-3">

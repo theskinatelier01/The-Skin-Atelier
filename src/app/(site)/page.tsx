@@ -20,12 +20,12 @@ import {
   getSettings,
   getTestimonials,
 } from "@/lib/cms/queries";
-import { formatCurrency, whatsappLink } from "@/lib/utils/format";
+import { formatCurrency, socialHandle, whatsappLink } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
-  title: "The Skin Atelier — Skin & Aesthetic Clinic in Islamabad",
+  title: "The Skin Atelier — Skin Science Confidence | Islamabad",
   description:
-    "Consultation-led dermatology and aesthetic treatments in F-11 Markaz, Islamabad. Botox, dermal fillers, PRP, HydraFacial, microneedling, laser and medical skincare.",
+    "Islamabad's premier destination for advanced dermatology and aesthetic medicine. Laser, Botox, fillers, PRP, PDRN, exosomes, HydraFacial and medical skincare in F-11 Markaz.",
   alternates: { canonical: "/" },
 };
 
@@ -53,8 +53,9 @@ export default async function HomePage() {
     <>
       <Hero
         settings={settings}
-        heading="Where Skin Meets Science."
-        subheading="Advanced aesthetic and dermatological care designed around your skin, your confidence and your goals."
+        heading="Where Science Meets Beauty."
+        subheading="Islamabad's premier destination for advanced dermatology and aesthetic medicine. Where every treatment is a masterpiece."
+        imageUrl="/images/clinic/atelier.webp"
       />
 
       {/* ---------------------------------------------------------------- */}
@@ -208,6 +209,56 @@ export default async function HomePage() {
       )}
 
       {/* ---------------------------------------------------------------- */}
+      {/* Refine your canvas                                                */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container-editorial section-y" aria-labelledby="precision-heading">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-20">
+          <Reveal className="lg:col-span-6">
+            <p className="eyebrow">Results driven</p>
+            <h2 id="precision-heading" className="mt-5 font-display text-display-md">
+              Refine your canvas.
+            </h2>
+            <div className="mt-6 space-y-5 text-[1.0625rem] leading-relaxed text-ink-muted">
+              <p>
+                Our treatments are designed to deliver visible, lasting results. Using
+                cutting-edge technology and medical-grade products, we transform your skin from
+                within.
+              </p>
+              <p>
+                Whether you seek age-defying solutions, acne scar revision, or simply a radiant
+                glow, our evidence-based protocols ensure outcomes that exceed expectations.
+              </p>
+            </div>
+
+            <dl className="mt-10 grid grid-cols-2 gap-8 border-t border-line-subtle pt-8">
+              <div>
+                <dt className="eyebrow">Years experience</dt>
+                <dd className="mt-2 font-display text-display-sm text-ink">15+</dd>
+              </div>
+              <div>
+                <dt className="eyebrow">Happy clients</dt>
+                <dd className="mt-2 font-display text-display-sm text-ink">5000+</dd>
+              </div>
+            </dl>
+          </Reveal>
+
+          <Reveal delay={120} className="lg:col-span-6">
+            <EditorialImage
+              src="/images/clinic/before-after.webp"
+              alt="Illustrative comparison of skin texture before and after a course of treatment"
+              className="aspect-square w-full"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              tone={1}
+            />
+            <p className="mt-3 text-xs leading-relaxed text-ink-subtle">
+              Illustrative image. Individual results vary — see our consented patient results on
+              the results page.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
       {/* Before & after                                                    */}
       {/* ---------------------------------------------------------------- */}
       <section className="border-y border-line-subtle bg-canvas-sunken" aria-labelledby="results-heading">
@@ -280,10 +331,81 @@ export default async function HomePage() {
 
           <Reveal delay={120} className="order-1 lg:order-2 lg:col-span-6">
             <div className="grid grid-cols-2 gap-4">
-              <EditorialImage alt="Clinic interior" className="aspect-[3/4] w-full" sizes="25vw" tone={0} />
-              <EditorialImage alt="Treatment room" className="mt-10 aspect-[3/4] w-full" sizes="25vw" tone={2} />
+              <EditorialImage
+                src="/images/clinic/interior.webp"
+                alt="Patient receiving a wellness infusion in the IV suite"
+                className="aspect-[3/4] w-full"
+                sizes="25vw"
+                tone={0}
+              />
+              <EditorialImage
+                src="/images/clinic/treatment-room.webp"
+                alt="Treatment room prepared at The Skin Atelier"
+                className="mt-10 aspect-[3/4] w-full"
+                sizes="25vw"
+                tone={2}
+              />
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Methodology                                                       */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="border-t border-line-subtle" aria-labelledby="methodology-heading">
+        <div className="container-editorial section-y">
+          <Reveal>
+            <SectionHeading
+              eyebrow="The process"
+              title="A patient-first philosophy."
+              description="We believe that true beauty emerges from the intersection of advanced medical science and deeply personalised care. Every treatment is a collaboration between physician and patient."
+              as="h2"
+            />
+          </Reveal>
+          <h2 id="methodology-heading" className="sr-only">
+            Our process
+          </h2>
+
+          <ol className="mt-14 grid gap-x-10 gap-y-0 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Comprehensive consultation",
+                copy: "Every journey begins with an in-depth skin analysis and personalised treatment planning session.",
+              },
+              {
+                title: "Customised protocol design",
+                copy: "We craft a bespoke treatment protocol tailored to your unique skin concerns and goals.",
+              },
+              {
+                title: "Expert procedure execution",
+                copy: "Our qualified clinicians perform each procedure with precision and care.",
+              },
+              {
+                title: "Post-treatment care",
+                copy: "Detailed aftercare guidance and follow-up appointments ensure optimal results.",
+              },
+              {
+                title: "Ongoing skin management",
+                copy: "Long-term skin health monitoring and maintenance programmes for lasting results.",
+              },
+            ].map((step, i) => (
+              <Reveal as="li" key={step.title} delay={(i % 3) * 90}>
+                <div className="flex gap-6 border-b border-line-subtle py-7">
+                  <span
+                    aria-hidden="true"
+                    className="font-display text-2xl leading-none text-champagne-400"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-ink">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-muted">{step.copy}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </ol>
         </div>
       </section>
 
@@ -426,7 +548,11 @@ export default async function HomePage() {
         <section className="section-y-sm" aria-labelledby="social-heading">
           <div className="container-editorial">
             <div className="flex flex-wrap items-end justify-between gap-6">
-              <SectionHeading eyebrow="Follow" title="@theskinatelier" as="h2" />
+              <SectionHeading
+                eyebrow="Follow"
+                title={socialHandle(settings.social.instagram, "@theskinatelier")}
+                as="h2"
+              />
               <h2 id="social-heading" className="sr-only">
                 From our Instagram
               </h2>
@@ -466,7 +592,7 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       <section className="relative isolate overflow-hidden bg-canvas-inverse text-ivory-100">
         <div className="absolute inset-0 -z-10 opacity-25">
-          <EditorialImage alt="" className="size-full" sizes="100vw" tone={1} />
+          <EditorialImage src="/images/clinic/hero-portrait.webp" alt="" className="size-full" sizes="100vw" tone={1} />
         </div>
 
         <div className="container-editorial section-y text-center">

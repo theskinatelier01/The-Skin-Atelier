@@ -38,6 +38,22 @@ function parseList(value: FormDataEntryValue | null): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Treatment options, one per line, with an optional price after a pipe:
+ *   Full Body | 45000
+ *   Upper Lip
+ */
+function parseVariants(value: FormDataEntryValue | null) {
+  return parseList(value).map((line) => {
+    const [name, rawPrice] = line.split("|");
+    const price = rawPrice?.trim() ? Number(rawPrice.replace(/[^\d.]/g, "")) : null;
+    return {
+      name: name.trim(),
+      price: price != null && Number.isFinite(price) ? price : null,
+    };
+  });
+}
+
 export async function saveService(
   _prev: ActionResult | null,
   formData: FormData,
@@ -48,6 +64,12 @@ export async function saveService(
     const id = (formData.get("id") as string) || undefined;
     const name = String(formData.get("name") ?? "");
 
+    // The editor form covers only part of the record. Load what is already
+    // stored so that fields it does not render — the treatment process, FAQs,
+    // related treatments and gallery — survive an edit instead of being blanked.
+    const existingSnap = id ? await adminDb().collection(C.services).doc(id).get() : null;
+    const existing = existingSnap?.data() ?? {};
+
     const parsed = serviceSchema.safeParse({
       name,
       slug: String(formData.get("slug") || slugify(name)),
@@ -57,7 +79,7 @@ export async function saveService(
       detailedDescription: formData.get("detailedDescription") ?? "",
       benefits: parseList(formData.get("benefits")),
       suitableFor: parseList(formData.get("suitableFor")),
-      treatmentProcess: [],
+      treatmentProcess: existing.treatmentProcess ?? [],
       durationMinutes: formData.get("durationMinutes"),
       downtime: formData.get("downtime") ?? "",
       resultsTimeline: formData.get("resultsTimeline") ?? "",
@@ -72,10 +94,11 @@ export async function saveService(
       showOnHomepage: formData.get("showOnHomepage") === "on",
       showInCategory: formData.get("showInCategory") === "on",
       displayOrder: formData.get("displayOrder") ?? 0,
+      variants: parseVariants(formData.get("variants")),
       coverImageUrl: formData.get("coverImageUrl") || "",
-      galleryImageUrls: [],
-      faqs: [],
-      relatedServiceIds: [],
+      galleryImageUrls: existing.galleryImageUrls ?? [],
+      faqs: existing.faqs ?? [],
+      relatedServiceIds: existing.relatedServiceIds ?? [],
       concernTags: formData.getAll("concernTags").map(String),
       seo: {
         title: (formData.get("seoTitle") as string) || undefined,
@@ -103,8 +126,7 @@ export async function saveService(
 
     let serviceId = id;
     if (serviceId) {
-      const beforeSnap = await adminDb().collection(C.services).doc(serviceId).get();
-      const before = beforeSnap.data();
+      const before = existing;
       await adminDb().collection(C.services).doc(serviceId).update(payload);
 
       const changes = diff(

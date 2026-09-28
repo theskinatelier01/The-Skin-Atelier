@@ -4,6 +4,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { PageHero } from "@/components/public/page-hero";
 import { EditorialImage } from "@/components/public/editorial-image";
 import { getGallery, getSettings } from "@/lib/cms/queries";
+import { socialHandle } from "@/lib/utils/format";
 import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
 
 export const revalidate = 3600;
@@ -66,7 +67,7 @@ export default async function GalleryPage() {
               rel="noopener noreferrer"
               className="link-reveal text-ink"
             >
-              @theskinatelier
+              {socialHandle(settings.social.instagram, "@theskinatelier")}
               <span className="link-reveal-line" />
             </a>
           </p>

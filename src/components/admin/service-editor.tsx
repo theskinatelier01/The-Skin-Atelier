@@ -170,6 +170,14 @@ export function ServiceEditor({
             defaultValue={service?.suitableFor.join("\n")}
             hint="One per line"
           />
+          <Textarea
+            name="variants"
+            label="Treatment options"
+            rows={6}
+            defaultValue={service?.variants?.map((v) => (v.price == null ? v.name : `${v.name} | ${v.price}`)).join("\n")}
+            hint="One per line — areas, tiers or courses. Add a price after a pipe, e.g. Full Body | 45000. Leave the price off to quote at consultation."
+            className="sm:col-span-2"
+          />
         </div>
 
         <div className="mt-5 flex gap-3 rounded-sm border border-line-subtle bg-canvas-sunken p-3.5">
@@ -266,9 +274,9 @@ export function ServiceEditor({
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <Input
             name="coverImageUrl"
-            label="Cover image URL"
+            label="Cover image"
             defaultValue={service?.coverImageUrl}
-            hint="Paste a URL from the media library"
+            hint="A URL from the media library, or a path to bundled artwork such as /images/services/botox.webp"
             className="sm:col-span-2"
           />
           <Input

@@ -148,6 +148,31 @@ export default async function ServiceDetailPage({
               </section>
             )}
 
+            {service.variants && service.variants.length > 0 && (
+              <section className="mt-14">
+                <h2 className="font-display text-display-sm">Treatment options</h2>
+                <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                  Areas and tiers bookable under this treatment. Which is right for you — and what
+                  it costs — is confirmed at consultation.
+                </p>
+                <ul className="mt-8 grid gap-x-8 sm:grid-cols-2">
+                  {service.variants.map((variant) => (
+                    <li
+                      key={variant.name}
+                      className="flex items-baseline justify-between gap-4 border-b border-line-subtle py-3.5"
+                    >
+                      <span className="text-sm text-ink">{variant.name}</span>
+                      {typeof variant.price === "number" && (
+                        <span className="shrink-0 text-sm tabular-nums text-ink-muted">
+                          {formatCurrency(variant.price, settings.currencySymbol)}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {service.treatmentProcess.length > 0 && (
               <section className="mt-14">
                 <h2 className="font-display text-display-sm">What happens during treatment</h2>

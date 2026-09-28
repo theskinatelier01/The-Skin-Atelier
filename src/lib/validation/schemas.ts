@@ -24,6 +24,19 @@ export const phoneSchema = z
   .max(20, "Phone number is too long")
   .regex(/^[+()\d\s-]+$/, "Phone number contains invalid characters");
 
+/**
+ * An image reference: either an absolute http(s) URL (Firebase Storage, a CDN)
+ * or a root-relative path to a file served from `public/`. Bundled artwork uses
+ * the latter, so a plain `.url()` check would reject the seeded catalogue.
+ */
+export const imageRefSchema = z
+  .string()
+  .trim()
+  .refine(
+    (v) => v === "" || /^https?:\/\//.test(v) || /^\/[^\s]*$/.test(v),
+    "Enter a full URL or a path beginning with /",
+  );
+
 export const emailSchema = z
   .string()
   .trim()
@@ -213,7 +226,17 @@ export const serviceSchema = z.object({
   showOnHomepage: z.boolean().default(false),
   showInCategory: z.boolean().default(true),
   displayOrder: z.coerce.number().int().min(0).default(0),
-  coverImageUrl: z.string().url().optional().or(z.literal("")),
+  variants: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(160),
+        price: z.coerce.number().min(0).nullable().optional(),
+        durationMinutes: z.coerce.number().int().min(5).max(480).optional(),
+        note: z.string().trim().max(300).optional(),
+      }),
+    )
+    .default([]),
+  coverImageUrl: imageRefSchema.optional(),
   galleryImageUrls: z.array(z.string()).default([]),
   faqs: z.array(z.object({ question: z.string().max(300), answer: z.string().max(3000) })).default([]),
   relatedServiceIds: z.array(z.string()).default([]),

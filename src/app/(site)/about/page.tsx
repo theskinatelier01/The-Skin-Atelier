@@ -86,7 +86,8 @@ export default async function AboutPage() {
 
           <Reveal delay={120} className="lg:col-span-5">
             <EditorialImage
-              alt="The Skin Atelier consultation room"
+              src="/images/clinic/consultation.webp"
+              alt="A clinician performing a procedure at The Skin Atelier"
               className="aspect-[4/5] w-full"
               sizes="(max-width: 1024px) 100vw, 40vw"
               tone={1}
@@ -177,7 +178,8 @@ export default async function AboutPage() {
             </div>
 
             <EditorialImage
-              alt="Clinic exterior at F-11 Markaz"
+              src="/images/clinic/atelier.webp"
+              alt="The Atelier treatment floor at F-11 Markaz"
               className="aspect-[3/2] w-full"
               sizes="(max-width: 1024px) 100vw, 50vw"
               tone={3}

@@ -112,6 +112,16 @@ export function whatsappLink(phone: string, message?: string): string {
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
+/**
+ * The `@handle` for a social profile URL, so the displayed handle always
+ * matches the link rather than being written out twice.
+ */
+export function socialHandle(url: string | undefined, fallback = ""): string {
+  if (!url) return fallback;
+  const segment = url.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
+  return segment ? `@${segment}` : fallback;
+}
+
 /** Fills `{{placeholders}}` in a WhatsApp/notification template. */
 export function renderTemplate(body: string, vars: Record<string, string | number>): string {
   return body.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) =>

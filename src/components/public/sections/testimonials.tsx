@@ -76,10 +76,15 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
               </p>
             </blockquote>
 
-            <figcaption className="mt-8 flex items-center gap-3 text-sm">
+            <figcaption className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
               <span className="font-medium text-ink">{t.authorName}</span>
               <span aria-hidden="true" className="h-3 w-px bg-line" />
               <span className="text-ink-subtle">{t.serviceName ?? t.source}</span>
+              {t.occasion && (
+                <span className="border border-line-subtle px-2.5 py-1 text-[0.625rem] uppercase tracking-[0.14em] text-ink-subtle">
+                  {t.occasion}
+                </span>
+              )}
               <span className="eyebrow ml-auto hidden sm:block">via {t.source}</span>
             </figcaption>
           </figure>

@@ -135,6 +135,7 @@ export const SERVICE_CATEGORIES = [
   "Hair Treatments",
   "Facial Treatments",
   "Body Treatments",
+  "Regenerative",
   "Dermatology",
   "Wellness",
 ] as const;
@@ -154,6 +155,20 @@ export interface ServiceFaq {
   answer: string;
 }
 
+/**
+ * A bookable option within a treatment — an area ("Upper Lip"), a tier
+ * ("Platinum HydraFacial") or a course ("Full Body — 5 Sessions").
+ *
+ * `price` is optional because most areas are quoted at consultation; where it
+ * is set it overrides the parent service's "from" price for that option.
+ */
+export interface ServiceVariant {
+  name: string;
+  price?: number | null;
+  durationMinutes?: number;
+  note?: string;
+}
+
 export interface Service extends BaseDoc {
   name: string;
   slug: string;
@@ -168,6 +183,8 @@ export interface Service extends BaseDoc {
   downtime: string;
   resultsTimeline: string;
   recommendedSessions: string;
+  /** Areas, tiers or courses bookable under this treatment. */
+  variants?: ServiceVariant[];
   price: number | null;
   discountedPrice?: number | null;
   priceOnConsultation: boolean;
@@ -887,6 +904,8 @@ export interface Testimonial extends BaseDoc {
   rating: number;
   body: string;
   serviceName?: string;
+  /** The occasion the visit was planned around — "Pre-Wedding Glow", "Eid Preparation". */
+  occasion?: string;
   source: "Google" | "Instagram" | "In-clinic" | "Facebook" | "Other";
   date?: ISODate;
   isVisible: boolean;

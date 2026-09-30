@@ -80,8 +80,12 @@ export default async function DoctorProfilePage({
             />
 
             <dl className="mt-10 divide-y divide-line-subtle border-y border-line-subtle">
-              <ProfileRow label="Qualifications" value={doctor.qualifications.join(", ")} />
-              <ProfileRow label="Special interests" value={doctor.specialties.join(", ")} />
+              {doctor.qualifications.length > 0 && (
+                <ProfileRow label="Qualifications" value={doctor.qualifications.join(", ")} />
+              )}
+              {doctor.specialties.length > 0 && (
+                <ProfileRow label="Special interests" value={doctor.specialties.join(", ")} />
+              )}
               {doctor.yearsExperience && (
                 <ProfileRow label="Experience" value={`${doctor.yearsExperience} years`} />
               )}

@@ -5,9 +5,21 @@ import { useFormStatus } from "react-dom";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox, Input, Textarea } from "@/components/ui/form";
+import { Checkbox, FormErrorSummary, Input, Textarea } from "@/components/ui/form";
 import { submitContactEnquiry } from "@/server/actions/public";
 import type { ActionResult } from "@/lib/action-result";
+
+/** Fields that render their own inline error next to the input. */
+const ATTRIBUTED_FIELDS = new Set(["fullName", "phone", "email", "subject", "message", "consent"]);
+
+/** Anything the server rejected that no visible field owns — see booking-form. */
+function unattributedErrors(state: ActionResult | null): string[] {
+  if (!state || state.ok || !state.errors) return [];
+  return Object.entries(state.errors)
+    .filter(([field]) => !ATTRIBUTED_FIELDS.has(field))
+    .map(([, message]) => message)
+    .filter((m): m is string => Boolean(m));
+}
 
 export function ContactForm() {
   const [state, formAction] = useActionState<ActionResult | null, FormData>(
@@ -32,6 +44,8 @@ export function ContactForm() {
           {state.message}
         </div>
       )}
+
+      <FormErrorSummary errors={unattributedErrors(state)} />
 
       <div aria-hidden="true" className="absolute -left-[9999px]">
         <label htmlFor="contact-website">Leave this field empty</label>

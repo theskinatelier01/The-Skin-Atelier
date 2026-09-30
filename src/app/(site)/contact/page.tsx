@@ -9,6 +9,10 @@ import { getSettings } from "@/lib/cms/queries";
 import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
 import { whatsappLink } from "@/lib/utils/format";
 
+// "Today" in the opening-hours table is derived at render time, so the page
+// must not be pinned at the CDN indefinitely.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Contact & Directions",
   description:

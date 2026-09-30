@@ -395,9 +395,7 @@ async function seedDemoData() {
     { fullName: "Imran Khalid", role: "INVENTORY_MANAGER", department: "Operations", commissionPercent: 0 },
     { fullName: "Hina Aslam", role: "ACCOUNTANT", department: "Finance", commissionPercent: 0 },
     { fullName: "Zara Mir", role: "MARKETING_MANAGER", department: "Marketing", commissionPercent: 0 },
-    { fullName: "Dr. Sara Ahmed", role: "DOCTOR", department: "Clinical", commissionPercent: 20 },
-    { fullName: "Dr. Hina Malik", role: "DOCTOR", department: "Clinical", commissionPercent: 18 },
-    { fullName: "Dr. Ayesha Tariq", role: "DOCTOR", department: "Clinical", commissionPercent: 18 },
+    { fullName: "Dr. Maria Aslam", role: "DOCTOR", department: "Clinical", commissionPercent: 20 },
   ];
 
   const staffWrites = staffSeed.map((member, i) => () =>

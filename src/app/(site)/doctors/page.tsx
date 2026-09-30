@@ -68,14 +68,20 @@ export default async function DoctorsPage() {
                   </p>
 
                   <dl className="mt-9 grid gap-x-10 gap-y-6 border-t border-line-subtle pt-8 sm:grid-cols-2">
-                    <div>
-                      <dt className="eyebrow">Qualifications</dt>
-                      <dd className="mt-2 text-sm text-ink">{doctor.qualifications.join(", ")}</dd>
-                    </div>
-                    <div>
-                      <dt className="eyebrow">Special interests</dt>
-                      <dd className="mt-2 text-sm text-ink">{doctor.specialties.join(", ")}</dd>
-                    </div>
+                    {/* Omitted rather than left as an empty heading when a
+                        profile has not had its credentials filled in yet. */}
+                    {doctor.qualifications.length > 0 && (
+                      <div>
+                        <dt className="eyebrow">Qualifications</dt>
+                        <dd className="mt-2 text-sm text-ink">{doctor.qualifications.join(", ")}</dd>
+                      </div>
+                    )}
+                    {doctor.specialties.length > 0 && (
+                      <div>
+                        <dt className="eyebrow">Special interests</dt>
+                        <dd className="mt-2 text-sm text-ink">{doctor.specialties.join(", ")}</dd>
+                      </div>
+                    )}
                     {doctor.yearsExperience && (
                       <div>
                         <dt className="eyebrow">Experience</dt>

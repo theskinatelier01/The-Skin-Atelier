@@ -9,6 +9,11 @@ import { getDoctors, getServices, getSettings } from "@/lib/cms/queries";
 import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
 import { whatsappLink } from "@/lib/utils/format";
 
+// Without this the page is prerendered once and pinned at the CDN for a year,
+// which freezes the date bounds and "open today" at the build date and leaves
+// stale HTML pointing at JS chunks a later deploy has already removed.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Book a Consultation",
   description:

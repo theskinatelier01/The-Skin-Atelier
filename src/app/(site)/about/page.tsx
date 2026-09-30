@@ -8,6 +8,7 @@ import { PageHero } from "@/components/public/page-hero";
 import { EditorialImage } from "@/components/public/editorial-image";
 import { getDoctors, getSettings } from "@/lib/cms/queries";
 import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
+import { cn } from "@/lib/utils/cn";
 
 export const revalidate = 3600;
 
@@ -133,7 +134,16 @@ export default async function AboutPage() {
           </ButtonLink>
         </Reveal>
 
-        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={cn(
+            "mt-14 grid gap-8",
+            doctors.length === 1
+              ? "max-w-sm"
+              : doctors.length === 2
+                ? "sm:grid-cols-2"
+                : "sm:grid-cols-2 lg:grid-cols-3",
+          )}
+        >
           {doctors.map((doctor, i) => (
             <Reveal key={doctor.id} delay={i * 90}>
               <EditorialImage

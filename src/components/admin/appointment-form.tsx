@@ -36,7 +36,7 @@ export function AppointmentForm({
 
   const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
   const [duration, setDuration] = useState(services[0]?.durationMinutes ?? slotMinutes);
-  const [startTime, setStartTime] = useState("11:00");
+  const [startTime, setStartTime] = useState("13:00");
 
   // Choosing a treatment sets its standard duration; the receptionist can still
   // override it for a longer visit.

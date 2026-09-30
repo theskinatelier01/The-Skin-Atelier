@@ -161,7 +161,14 @@ export default async function ServiceDetailPage({
                       key={variant.name}
                       className="flex items-baseline justify-between gap-4 border-b border-line-subtle py-3.5"
                     >
-                      <span className="text-sm text-ink">{variant.name}</span>
+                      <span className="min-w-0 text-sm text-ink">
+                        {variant.name}
+                        {variant.note && (
+                          <span className="mt-0.5 block text-xs text-ink-subtle">
+                            {variant.note}
+                          </span>
+                        )}
+                      </span>
                       {typeof variant.price === "number" && (
                         <span className="shrink-0 text-sm tabular-nums text-ink-muted">
                           {formatCurrency(variant.price, settings.currencySymbol)}

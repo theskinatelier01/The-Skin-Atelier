@@ -1,14 +1,41 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { CheckCircle2, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox, Input, Select, Textarea } from "@/components/ui/form";
+import { Checkbox, FormErrorSummary, Input, Select, Textarea } from "@/components/ui/form";
 import { submitAppointmentRequest } from "@/server/actions/public";
 import type { ActionResult } from "@/lib/action-result";
 import type { Doctor, Service } from "@/types";
+
+/** Kept in step with `appointment.maxAdvanceDays` in the clinic settings. */
+const MAX_ADVANCE_DAYS = 90;
+
+/** Fields that render their own inline error next to the input. */
+const ATTRIBUTED_FIELDS = new Set([
+  "fullName",
+  "phone",
+  "whatsapp",
+  "email",
+  "preferredDate",
+  "message",
+  "consent",
+]);
+
+/**
+ * Errors for fields the visitor cannot see — the honeypot, or a field added to
+ * the schema but not yet to this form. These have to be shown somewhere, or a
+ * rejected submission looks identical to no submission at all.
+ */
+function unattributedErrors(state: ActionResult | null): string[] {
+  if (!state || state.ok || !state.errors) return [];
+  return Object.entries(state.errors)
+    .filter(([field]) => !ATTRIBUTED_FIELDS.has(field))
+    .map(([, message]) => message)
+    .filter((m): m is string => Boolean(m));
+}
 
 /**
  * Public booking form.
@@ -30,6 +57,20 @@ export function BookingForm({
     submitAppointmentRequest,
     null,
   );
+
+  // The page is prerendered, so anything derived from the clock during render
+  // would be the *build* date, not today's — and React keeps the server value
+  // on hydration, so the bounds would never correct themselves. Setting them
+  // after mount is the only way they stay true as the deployment ages.
+  const [dateBounds, setDateBounds] = useState<{ min: string; max: string } | null>(null);
+
+  useEffect(() => {
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    setDateBounds({
+      min: iso(new Date()),
+      max: iso(new Date(Date.now() + MAX_ADVANCE_DAYS * 86_400_000)),
+    });
+  }, []);
 
   if (state?.ok) {
     return (
@@ -58,10 +99,6 @@ export function BookingForm({
     );
   }
 
-  // Cannot book further ahead than the clinic allows, nor in the past.
-  const today = new Date().toISOString().slice(0, 10);
-  const maxDate = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
-
   return (
     <form action={formAction} className="space-y-6" noValidate>
       {state?.message && !state.ok && (
@@ -69,6 +106,11 @@ export function BookingForm({
           {state.message}
         </div>
       )}
+
+      {/* Anything the server rejected that no visible field owns. Without this
+          the form would simply do nothing and the visitor would be left
+          pressing the button. */}
+      <FormErrorSummary errors={unattributedErrors(state)} />
 
       {/* Honeypot — visually hidden and removed from the tab order. */}
       <div aria-hidden="true" className="absolute -left-[9999px]">
@@ -129,8 +171,8 @@ export function BookingForm({
           name="preferredDate"
           label="Preferred date"
           type="date"
-          min={today}
-          max={maxDate}
+          min={dateBounds?.min}
+          max={dateBounds?.max}
           error={state?.errors?.preferredDate}
         />
         <Select
@@ -138,9 +180,9 @@ export function BookingForm({
           label="Preferred time"
           placeholder="No preference"
           options={[
-            { value: "Morning (11:00 – 13:00)", label: "Morning (11:00 – 13:00)" },
-            { value: "Afternoon (13:00 – 16:00)", label: "Afternoon (13:00 – 16:00)" },
-            { value: "Evening (16:00 – 20:00)", label: "Evening (16:00 – 20:00)" },
+            { value: "Early afternoon (13:00 – 15:00)", label: "Early afternoon (13:00 – 15:00)" },
+            { value: "Late afternoon (15:00 – 17:30)", label: "Late afternoon (15:00 – 17:30)" },
+            { value: "Evening (17:30 – 20:00)", label: "Evening (17:30 – 20:00)" },
           ]}
         />
       </div>

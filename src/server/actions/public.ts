@@ -83,13 +83,16 @@ export async function submitAppointmentRequest(
     website: formData.get("website") ?? "",
   };
 
+  // A filled honeypot is a bot. Return success so it learns nothing. This has
+  // to happen *before* validation: the schema caps `website` at zero
+  // characters, so parsing first would reject the bot with a visible field
+  // error and give the trap away.
+  if (raw.website) return { ok: true, message: "Thank you — we will be in touch shortly." };
+
   const parsed = appointmentRequestSchema.safeParse(raw);
   if (!parsed.success) {
     return { ok: false, errors: fieldErrors(parsed.error) };
   }
-
-  // A filled honeypot is a bot. Return success so it learns nothing.
-  if (parsed.data.website) return { ok: true, message: "Thank you — we will be in touch shortly." };
 
   if (!rateLimit(await clientKey())) {
     return {
@@ -173,6 +176,9 @@ export async function submitContactEnquiry(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  // Honeypot first, for the same reason as the booking action above.
+  if (formData.get("website")) return { ok: true, message: "Thank you — we will be in touch." };
+
   const parsed = contactSchema.safeParse({
     fullName: formData.get("fullName"),
     phone: formData.get("phone"),
@@ -184,7 +190,6 @@ export async function submitContactEnquiry(
   });
 
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
-  if (parsed.data.website) return { ok: true, message: "Thank you — we will be in touch." };
 
   if (!rateLimit(await clientKey())) {
     return { ok: false, message: "Please wait a few minutes before sending another message." };

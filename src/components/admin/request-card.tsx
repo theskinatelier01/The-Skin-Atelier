@@ -39,7 +39,7 @@ export function RequestCard({
     doctorId: request.preferredDoctorId ?? doctors[0]?.id ?? "",
     serviceId: request.preferredServiceId ?? services[0]?.id ?? "",
     date: request.preferredDate || dateKey(),
-    startTime: "11:00",
+    startTime: "13:00",
     durationMinutes: slotMinutes,
   });
 

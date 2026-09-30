@@ -21,6 +21,7 @@ import {
   getSettings,
   getTestimonials,
 } from "@/lib/cms/queries";
+import { cn } from "@/lib/utils/cn";
 import { formatCurrency, socialHandle, whatsappLink } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
@@ -430,7 +431,18 @@ export default async function HomePage() {
             Our experts
           </h2>
 
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {/* A single clinician in a three-column grid reads as two missing
+              people, so the track count follows how many there actually are. */}
+          <div
+            className={cn(
+              "mt-14 grid gap-8",
+              doctors.length === 1
+                ? "max-w-sm"
+                : doctors.length === 2
+                  ? "sm:grid-cols-2"
+                  : "sm:grid-cols-2 lg:grid-cols-3",
+            )}
+          >
             {doctors.slice(0, 3).map((doctor, i) => (
               <Reveal key={doctor.id} delay={i * 100}>
                 <Link href={`/doctors/${doctor.slug}`} className="group block">

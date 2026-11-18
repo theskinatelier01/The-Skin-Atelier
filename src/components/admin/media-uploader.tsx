@@ -1,12 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { CheckCircle2, Copy, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
-import { getClientStorage, isFirebaseConfigured } from "@/lib/firebase/client";
-import { slugify } from "@/lib/utils/format";
+import { uploadMedia } from "@/components/admin/image-field";
 
 interface Uploaded {
   name: string;
@@ -14,7 +14,7 @@ interface Uploaded {
   sizeBytes: number;
 }
 
-const MAX_BYTES = 50 * 1024 * 1024;
+const MAX_BYTES = 25 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif", "video/mp4", "video/webm"];
 
 /**
@@ -26,6 +26,7 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif", "video/
  * the write; the checks here exist to fail fast with a useful message.
  */
 export function MediaUploader() {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -37,10 +38,6 @@ export function MediaUploader() {
   async function upload(files: FileList | File[]) {
     setError(null);
 
-    if (!isFirebaseConfigured) {
-      setError("Firebase is not configured, so uploads are unavailable in this environment.");
-      return;
-    }
 
     const list = Array.from(files);
     for (const file of list) {
@@ -49,7 +46,7 @@ export function MediaUploader() {
         return;
       }
       if (file.size > MAX_BYTES) {
-        setError(`${file.name} is larger than the 50MB limit.`);
+        setError(`${file.name} is larger than the 25MB limit.`);
         return;
       }
     }
@@ -58,37 +55,14 @@ export function MediaUploader() {
     setProgress(0);
 
     try {
-      const { ref, uploadBytesResumable, getDownloadURL } = await import("firebase/storage");
-      const storage = getClientStorage();
-
-      for (const file of list) {
-        // Timestamp prefix keeps names unique without losing the original.
-        const safeName = `${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ""))}`;
-        const extension = file.name.split(".").pop() ?? "bin";
-        const storageRef = ref(storage, `public/media/${safeName}.${extension}`);
-
-        const task = uploadBytesResumable(storageRef, file, { contentType: file.type });
-
-        await new Promise<void>((resolve, reject) => {
-          task.on(
-            "state_changed",
-            (snapshot) =>
-              setProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
-            reject,
-            resolve,
-          );
-        });
-
-        const url = await getDownloadURL(task.snapshot.ref);
+      for (const [index, file] of list.entries()) {
+        setProgress(Math.round((index / list.length) * 100));
+        const url = await uploadMedia(file);
         setUploaded((current) => [{ name: file.name, url, sizeBytes: file.size }, ...current]);
       }
+      router.refresh();
     } catch (err) {
-      const code = (err as { code?: string })?.code;
-      setError(
-        code === "storage/unauthorized"
-          ? "Your role is not permitted to upload website media."
-          : "The upload failed. Check your connection and try again.",
-      );
+      setError((err as Error).message || "The upload failed. Check your connection and try again.");
     } finally {
       setUploading(false);
       setProgress(0);
@@ -115,7 +89,7 @@ export function MediaUploader() {
       >
         <Upload aria-hidden="true" className="mx-auto size-5 text-ink-subtle" />
         <p className="mt-3 text-sm text-ink">Drag files here</p>
-        <p className="mt-1 text-xs text-ink-subtle">JPEG, PNG, WebP, AVIF, MP4 or WebM up to 50MB</p>
+        <p className="mt-1 text-xs text-ink-subtle">JPEG, PNG, WebP, AVIF, MP4 or WebM up to 25MB</p>
 
         <input
           ref={inputRef}

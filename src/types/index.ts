@@ -1060,6 +1060,8 @@ export interface ClinicSettings extends BaseDoc {
   announcementBar?: { enabled: boolean; text: string; href?: string };
   /** Master switch consumed by the public booking form. */
   onlineBookingEnabled: boolean;
+  /** Homepage hero copy and artwork, edited under Website → Settings. */
+  homepage?: { heroHeading?: string; heroSubheading?: string; heroImageUrl?: string };
 }
 
 /* ========================================================================== */

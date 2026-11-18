@@ -30,8 +30,10 @@ export async function generateMetadata({
   const service = await getServiceBySlug(slug);
   if (!service) return { title: "Treatment not found" };
 
+  // Long titles skip the " | The Skin Atelier" suffix so Google shows them whole.
+  const seoTitle = service.seo?.title ?? `${service.name} in Islamabad`;
   return {
-    title: service.seo?.title ?? `${service.name} in Islamabad`,
+    title: seoTitle.length > 42 ? { absolute: seoTitle } : seoTitle,
     description: service.seo?.description ?? service.shortDescription,
     alternates: { canonical: `/services/${service.slug}` },
     openGraph: {

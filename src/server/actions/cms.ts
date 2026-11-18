@@ -17,6 +17,7 @@ import {
 } from "@/lib/validation/schemas";
 import { readingMinutes, slugify } from "@/lib/utils/format";
 import { toActionResult, type ActionResult } from "@/lib/action-result";
+import { seedCollectionIfEmpty } from "@/lib/cms/seed";
 
 /**
  * Website content management.
@@ -60,6 +61,11 @@ export async function saveService(
 ): Promise<ActionResult & { serviceId?: string }> {
   try {
     const ctx = await requirePermission("cms.services.write");
+
+    // The site shows bundled treatments until the collection holds data; copy
+    // them in first so this edit does not become the only treatment listed.
+    await seedCollectionIfEmpty(C.services);
+    await seedCollectionIfEmpty(C.serviceCategories);
 
     const id = (formData.get("id") as string) || undefined;
     const name = String(formData.get("name") ?? "");
@@ -154,10 +160,7 @@ export async function saveService(
       });
     }
 
-    revalidatePath("/services");
-    revalidatePath(`/services/${parsed.data.slug}`);
-    revalidatePath("/");
-    revalidatePath("/admin/website/services");
+    revalidatePath("/", "layout");
     return { ok: true, message: "Treatment saved and published.", serviceId };
   } catch (error) {
     return toActionResult(error, "The treatment could not be saved.");
@@ -172,6 +175,7 @@ export async function toggleServiceFlag(
 ): Promise<ActionResult> {
   try {
     const ctx = await requirePermission("cms.services.write");
+    await seedCollectionIfEmpty(C.services);
 
     await adminDb()
       .collection(C.services)
@@ -185,9 +189,7 @@ export async function toggleServiceFlag(
       after: { [field]: value },
     });
 
-    revalidatePath("/services");
-    revalidatePath("/");
-    revalidatePath("/admin/website/services");
+    revalidatePath("/", "layout");
     return { ok: true };
   } catch (error) {
     return toActionResult(error, "The change could not be saved.");
@@ -521,6 +523,18 @@ export async function saveSettings(
           text: String(formData.get("announcementText") ?? ""),
           href: String(formData.get("announcementHref") ?? ""),
         },
+        homepage: {
+          heroHeading: String(formData.get("heroHeading") ?? "").trim(),
+          heroSubheading: String(formData.get("heroSubheading") ?? "").trim(),
+          heroImageUrl: String(formData.get("heroImageUrl") ?? "").trim(),
+        },
+        social: {
+          instagram: String(formData.get("socialInstagram") ?? "").trim(),
+          facebook: String(formData.get("socialFacebook") ?? "").trim(),
+          tiktok: String(formData.get("socialTiktok") ?? "").trim(),
+          youtube: String(formData.get("socialYoutube") ?? "").trim(),
+        },
+        googleReviewUrl: String(formData.get("googleReviewUrl") ?? "").trim(),
         updatedAt: FieldValue.serverTimestamp(),
         updatedBy: ctx.uid,
       },

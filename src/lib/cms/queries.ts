@@ -39,11 +39,37 @@ import {
  * Every function falls back to bundled defaults when Firebase is unconfigured.
  */
 
+/**
+ * Composite indexes are deliberately avoided here: each read filters on one
+ * field and sorts in memory. Website collections hold tens of documents, and a
+ * missing index would otherwise take the whole public site down.
+ */
+function byDisplayOrder<T extends { displayOrder?: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+}
+
+/**
+ * Stored settings are layered over the defaults, so a document written by the
+ * settings form (which covers only some fields) never blanks the opening
+ * hours, social links or SEO defaults on the live site.
+ */
+export function mergeSettings(stored: Partial<ClinicSettings>): ClinicSettings {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    social: { ...DEFAULT_SETTINGS.social, ...stored.social },
+    appointment: { ...DEFAULT_SETTINGS.appointment, ...stored.appointment },
+    seoDefaults: { ...DEFAULT_SETTINGS.seoDefaults, ...stored.seoDefaults },
+    homepage: { ...DEFAULT_SETTINGS.homepage, ...stored.homepage },
+    openingHours: stored.openingHours?.length ? stored.openingHours : DEFAULT_SETTINGS.openingHours,
+  };
+}
+
 export const getSettings = cache(async (): Promise<ClinicSettings> =>
   readOrFallback(async () => {
     const snap = await adminDb().collection(C.settings).doc(SETTINGS_DOC_ID).get();
     if (!snap.exists) return DEFAULT_SETTINGS;
-    return { id: snap.id, ...snap.data() } as ClinicSettings;
+    return mergeSettings(fromSnapshot<Partial<ClinicSettings>>(snap as FirebaseFirestore.QueryDocumentSnapshot));
   }, DEFAULT_SETTINGS),
 );
 
@@ -52,9 +78,8 @@ export const getServices = cache(async (): Promise<Service[]> =>
     const snap = await adminDb()
       .collection(C.services)
       .where("isActive", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<Service>(d)).filter((s) => !s.deletedAt);
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<Service>(d))).filter((s) => !s.deletedAt);
     return items.length ? items : DEFAULT_SERVICES;
   }, DEFAULT_SERVICES),
 );
@@ -69,9 +94,8 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
     const snap = await adminDb()
       .collection(C.serviceCategories)
       .where("isActive", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<ServiceCategory>(d));
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<ServiceCategory>(d)));
     return items.length ? items : DEFAULT_SERVICE_CATEGORIES;
   }, DEFAULT_SERVICE_CATEGORIES),
 );
@@ -81,9 +105,8 @@ export const getDoctors = cache(async (): Promise<Doctor[]> =>
     const snap = await adminDb()
       .collection(C.doctors)
       .where("isPublished", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<Doctor>(d)).filter((d) => !d.deletedAt);
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<Doctor>(d))).filter((d) => !d.deletedAt);
     return items.length ? items : DEFAULT_DOCTORS;
   }, DEFAULT_DOCTORS),
 );
@@ -98,9 +121,8 @@ export const getPackages = cache(async (): Promise<Package[]> =>
     const snap = await adminDb()
       .collection(C.packages)
       .where("isActive", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<Package>(d)).filter((p) => !p.deletedAt);
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<Package>(d))).filter((p) => !p.deletedAt);
     return items.length ? items : DEFAULT_PACKAGES;
   }, DEFAULT_PACKAGES),
 );
@@ -110,9 +132,8 @@ export const getTestimonials = cache(async (): Promise<Testimonial[]> =>
     const snap = await adminDb()
       .collection(C.testimonials)
       .where("isVisible", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<Testimonial>(d));
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<Testimonial>(d)));
     return items.length ? items : DEFAULT_TESTIMONIALS;
   }, DEFAULT_TESTIMONIALS),
 );
@@ -122,9 +143,8 @@ export const getFaqs = cache(async (): Promise<Faq[]> =>
     const snap = await adminDb()
       .collection(C.faqs)
       .where("isVisible", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<Faq>(d));
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<Faq>(d)));
     return items.length ? items : DEFAULT_FAQS;
   }, DEFAULT_FAQS),
 );
@@ -148,9 +168,8 @@ export const getGallery = cache(async (): Promise<GalleryItem[]> =>
     const snap = await adminDb()
       .collection(C.gallery)
       .where("isVisible", "==", true)
-      .orderBy("displayOrder")
       .get();
-    const items = snap.docs.map((d) => fromSnapshot<GalleryItem>(d));
+    const items = byDisplayOrder(snap.docs.map((d) => fromSnapshot<GalleryItem>(d)));
     return items.length ? items : DEFAULT_GALLERY;
   }, DEFAULT_GALLERY),
 );
@@ -167,12 +186,13 @@ export const getPublishedBeforeAfter = cache(async (): Promise<BeforeAfterCase[]
       .collection(C.beforeAfterCases)
       .where("publicationStatus", "==", "Published")
       .where("consentStatus", "==", "Granted")
-      .orderBy("displayOrder")
       .limit(60)
       .get();
-    return snap.docs
-      .map((d) => fromSnapshot<BeforeAfterCase>(d))
-      .filter((c) => !c.deletedAt && c.publicBeforeImageUrl && c.publicAfterImageUrl);
+    return byDisplayOrder(
+      snap.docs
+        .map((d) => fromSnapshot<BeforeAfterCase>(d))
+        .filter((c) => !c.deletedAt && c.publicBeforeImageUrl && c.publicAfterImageUrl),
+    );
   }, []),
 );
 
@@ -180,14 +200,15 @@ export const getBlogPosts = cache(async (limit = 50): Promise<BlogPost[]> =>
   readOrFallback(async () => {
     const snap = await adminDb()
       .collection(C.blogs)
-      .where("status", "==", "published")
-      .orderBy("publishedAt", "desc")
-      .limit(limit)
+      // Scheduled posts go live on their own once `publishedAt` has passed.
+      .where("status", "in", ["published", "scheduled"])
       .get();
     const nowIso = new Date().toISOString();
     return snap.docs
       .map((d) => fromSnapshot<BlogPost>(d))
-      .filter((p) => !p.deletedAt && (!p.publishedAt || p.publishedAt <= nowIso));
+      .filter((p) => !p.deletedAt && Boolean(p.publishedAt) && p.publishedAt! <= nowIso)
+      .sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
+      .slice(0, limit);
   }, []),
 );
 

@@ -32,6 +32,15 @@ export const metadata: Metadata = {
   description:
     "Advanced aesthetic and dermatological care in F-11 Markaz, Islamabad. Consultation-led treatments for skin, hair and confidence.",
   applicationName: "The Skin Atelier",
+  // Pages that set their own openGraph replace this object, so each one that
+  // does so supplies its own image.
+  openGraph: {
+    type: "website",
+    siteName: "The Skin Atelier",
+    locale: "en_PK",
+    images: [{ url: "/images/clinic/atelier.webp", alt: "The Skin Atelier, F-11 Markaz, Islamabad" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/images/clinic/atelier.webp"] },
   manifest: "/manifest.webmanifest",
   formatDetection: { telephone: true, address: true },
 };

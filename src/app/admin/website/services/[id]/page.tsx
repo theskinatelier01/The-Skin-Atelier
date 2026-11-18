@@ -5,13 +5,14 @@ import { ButtonLink } from "@/components/ui/button";
 import { AdminPageHeader } from "@/components/admin/admin-ui";
 import { ServiceEditor } from "@/components/admin/service-editor";
 import { requirePermission } from "@/lib/auth/session";
-import { getServiceCategories, getServices } from "@/lib/cms/queries";
+import { getServiceCategories } from "@/lib/cms/queries";
+import { getAllServicesForAdmin } from "@/lib/cms/admin-content";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const service = (await getServices()).find((s) => s.id === id);
+  const service = (await getAllServicesForAdmin()).find((s) => s.id === id);
   return { title: service ? `Edit ${service.name}` : "Treatment" };
 }
 
@@ -19,7 +20,7 @@ export default async function EditServicePage({ params }: { params: Promise<{ id
   await requirePermission("cms.services.write");
 
   const { id } = await params;
-  const [services, categories] = await Promise.all([getServices(), getServiceCategories()]);
+  const [services, categories] = await Promise.all([getAllServicesForAdmin(), getServiceCategories()]);
   const service = services.find((s) => s.id === id);
   if (!service) notFound();
 

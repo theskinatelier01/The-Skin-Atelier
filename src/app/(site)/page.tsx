@@ -25,9 +25,10 @@ import { cn } from "@/lib/utils/cn";
 import { formatCurrency, socialHandle, whatsappLink } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
-  title: "The Skin Atelier — Skin Science Confidence | Islamabad",
+  // Absolute: the brand is already in the title, so the template is skipped.
+  title: { absolute: "The Skin Atelier — Skin & Aesthetic Clinic in Islamabad" },
   description:
-    "Islamabad's premier destination for advanced dermatology and aesthetic medicine. Laser, Botox, fillers, PRP, PDRN, exosomes, HydraFacial and medical skincare in F-11 Markaz.",
+    "Advanced dermatology and aesthetic medicine in F-11 Markaz, Islamabad: laser, Botox, fillers, PRP, PDRN, exosomes and HydraFacial.",
   alternates: { canonical: "/" },
 };
 
@@ -55,9 +56,9 @@ export default async function HomePage() {
     <>
       <Hero
         settings={settings}
-        heading="Where Science Meets Beauty."
-        subheading="Islamabad's premier destination for advanced dermatology and aesthetic medicine. Where every treatment is a masterpiece."
-        imageUrl="/images/clinic/atelier.webp"
+        heading={settings.homepage?.heroHeading || "Where Science Meets Beauty."}
+        subheading={settings.homepage?.heroSubheading || ""}
+        imageUrl={settings.homepage?.heroImageUrl || "/images/clinic/atelier.webp"}
       />
 
       {/* ---------------------------------------------------------------- */}

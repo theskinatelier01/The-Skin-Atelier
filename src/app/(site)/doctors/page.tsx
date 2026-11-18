@@ -11,7 +11,7 @@ import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Our Experts — Dermatologists & Aesthetic Physicians",
+  title: "Our Dermatologists & Aesthetic Doctors",
   description:
     "Meet the clinicians at The Skin Atelier, Islamabad. Qualified dermatologists and aesthetic physicians who plan and deliver your treatment personally.",
   alternates: { canonical: "/doctors" },

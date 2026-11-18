@@ -9,7 +9,7 @@ import { breadcrumbSchema, JsonLd } from "@/lib/seo/schema";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Treatments — Dermatology & Aesthetics in Islamabad",
+  title: "Skin & Aesthetic Treatments in Islamabad",
   description:
     "Explore the full treatment menu at The Skin Atelier, Islamabad: injectables, skin and laser treatments, hair restoration, facials and medical dermatology.",
   alternates: { canonical: "/services" },

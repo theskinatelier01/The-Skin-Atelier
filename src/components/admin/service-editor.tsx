@@ -7,6 +7,7 @@ import { Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Select, Textarea } from "@/components/ui/form";
+import { ImageField } from "@/components/admin/image-field";
 import { saveService } from "@/server/actions/cms";
 import { slugify } from "@/lib/utils/format";
 import { SKIN_CONCERNS, type Service, type ServiceCategory } from "@/types";
@@ -272,11 +273,11 @@ export function ServiceEditor({
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <Input
+          <ImageField
             name="coverImageUrl"
             label="Cover image"
             defaultValue={service?.coverImageUrl}
-            hint="A URL from the media library, or a path to bundled artwork such as /images/services/botox.webp"
+            error={state?.errors?.coverImageUrl}
             className="sm:col-span-2"
           />
           <Input

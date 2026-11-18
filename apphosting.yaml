@@ -14,7 +14,7 @@ env:
   # Canonical URLs, sitemap and Open Graph tags. Change this when the custom
   # domain is connected.
   - variable: NEXT_PUBLIC_SITE_URL
-    value: https://skin-atelier--the-skin-atelier-d7d3d.asia-southeast1.hosted.app
+    value: https://tsaisb.com
     availability:
       - BUILD
       - RUNTIME

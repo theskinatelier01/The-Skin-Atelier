@@ -9,7 +9,8 @@ import { AdminPageHeader, AdminSection, StatCard } from "@/components/admin/admi
 import { ServiceFlagToggle } from "@/components/admin/service-flag-toggle";
 import { getAuthContext } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
-import { getServices, getSettings } from "@/lib/cms/queries";
+import { getSettings } from "@/lib/cms/queries";
+import { getAllServicesForAdmin } from "@/lib/cms/admin-content";
 import { formatCurrency } from "@/lib/utils/format";
 
 export const metadata = { title: "Services" };
@@ -26,7 +27,7 @@ export default async function AdminServicesPage() {
   const ctx = await getAuthContext();
   if (!ctx || !hasPermission(ctx, "cms.services.read")) notFound();
 
-  const [services, settings] = await Promise.all([getServices(), getSettings()]);
+  const [services, settings] = await Promise.all([getAllServicesForAdmin(), getSettings()]);
   const canWrite = hasPermission(ctx, "cms.services.write");
 
   return (

@@ -11,7 +11,14 @@ import { SESSION_COOKIE } from "@/lib/auth/constants";
  * a redirect convenience, never the security boundary.
  */
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
+
+  // One canonical host: www.tsaisb.com -> tsaisb.com, so search engines do not
+  // index two copies of every page.
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
+  if (host.startsWith("www.")) {
+    return NextResponse.redirect(`https://${host.slice(4)}${pathname}${search}`, 301);
+  }
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
 
   if (pathname.startsWith("/admin") && !hasSession) {
@@ -33,5 +40,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  // Everything except static assets, so the host redirect covers every page.
+  matcher: ["/((?!_next/static|_next/image|images/|icon.png|apple-icon.png|favicon.ico).*)"],
 };

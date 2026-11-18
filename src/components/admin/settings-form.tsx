@@ -5,7 +5,8 @@ import { useFormStatus } from "react-dom";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox, Input } from "@/components/ui/form";
+import { Checkbox, Input, Textarea } from "@/components/ui/form";
+import { ImageField } from "@/components/admin/image-field";
 import { saveSettings } from "@/server/actions/cms";
 import type { ClinicSettings } from "@/types";
 import type { ActionResult } from "@/lib/action-result";
@@ -172,6 +173,44 @@ export function SettingsForm({ settings }: { settings: ClinicSettings }) {
           label="Announcement link"
           defaultValue={settings.announcementBar?.href}
           placeholder="/book"
+        />
+      </Section>
+
+      <Section
+        title="Homepage"
+        description="The large heading, introduction and photograph at the top of the homepage."
+      >
+        <Input
+          name="heroHeading"
+          label="Heading"
+          defaultValue={settings.homepage?.heroHeading}
+          className="sm:col-span-2"
+        />
+        <Textarea
+          name="heroSubheading"
+          label="Introduction"
+          rows={3}
+          defaultValue={settings.homepage?.heroSubheading}
+          className="sm:col-span-2"
+        />
+        <ImageField
+          name="heroImageUrl"
+          label="Photograph"
+          defaultValue={settings.homepage?.heroImageUrl}
+          className="sm:col-span-2"
+        />
+      </Section>
+
+      <Section title="Social links" description="Shown in the footer and used in search results. Leave blank to hide.">
+        <Input name="socialInstagram" label="Instagram" defaultValue={settings.social?.instagram} />
+        <Input name="socialFacebook" label="Facebook" defaultValue={settings.social?.facebook} />
+        <Input name="socialTiktok" label="TikTok" defaultValue={settings.social?.tiktok} />
+        <Input name="socialYoutube" label="YouTube" defaultValue={settings.social?.youtube} />
+        <Input
+          name="googleReviewUrl"
+          label="Google review link"
+          defaultValue={settings.googleReviewUrl}
+          className="sm:col-span-2"
         />
       </Section>
 

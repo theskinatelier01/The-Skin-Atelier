@@ -4,6 +4,8 @@ import { FolderOpen, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/ui/primitives";
 import { AdminPageHeader, AdminSection, StatCard } from "@/components/admin/admin-ui";
 import { MediaUploader } from "@/components/admin/media-uploader";
+import { MediaGrid } from "@/components/admin/media-grid";
+import { listMedia } from "@/lib/cms/admin-content";
 import { getAuthContext } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
 
@@ -23,6 +25,7 @@ export default async function MediaLibraryPage() {
   if (!ctx || !hasPermission(ctx, "cms.media.read")) notFound();
 
   const canUpload = hasPermission(ctx, "cms.media.write");
+  const files = await listMedia();
 
   return (
     <>
@@ -44,7 +47,7 @@ export default async function MediaLibraryPage() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Storage path" value="public/" icon={<FolderOpen />} hint="World readable" />
-        <StatCard label="Max file size" value="50 MB" hint="Images and video" />
+        <StatCard label="Max file size" value="25 MB" hint="Images and video" />
         <StatCard label="Upload roles" value="Marketing, Admin" hint="Enforced by Storage rules" />
       </div>
 
@@ -64,12 +67,16 @@ export default async function MediaLibraryPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <AdminSection title="Files" description="Uploaded media">
-            <EmptyState
-              icon={<FolderOpen />}
-              title="No files uploaded yet"
-              description="Uploaded media appears here with its dimensions, size and alt text. Use the upload panel to add the clinic photography."
-            />
+          <AdminSection title="Files" description={`${files.length} uploaded`}>
+            {files.length === 0 ? (
+              <EmptyState
+                icon={<FolderOpen />}
+                title="No files uploaded yet"
+                description="Uploaded images appear here. Copy a file's link to use it anywhere on the website."
+              />
+            ) : (
+              <MediaGrid files={files} />
+            )}
           </AdminSection>
         </div>
       </div>

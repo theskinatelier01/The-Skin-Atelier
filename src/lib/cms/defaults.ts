@@ -91,6 +91,12 @@ export const DEFAULT_SETTINGS: ClinicSettings = {
     href: "/book",
   },
   onlineBookingEnabled: true,
+  homepage: {
+    heroHeading: "Where Science Meets Beauty.",
+    heroSubheading:
+      "Islamabad's premier destination for advanced dermatology and aesthetic medicine. Where every treatment is a masterpiece.",
+    heroImageUrl: "/images/clinic/atelier.webp",
+  },
 };
 
 /* -------------------------------------------------------------------------- */

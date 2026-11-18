@@ -403,6 +403,9 @@ export const testimonialSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
   body: z.string().trim().min(10).max(2000),
   serviceName: z.string().trim().max(160).optional(),
+  occasion: z.string().trim().max(120).optional(),
+  date: z.string().trim().max(40).optional(),
+  avatarUrl: imageRefSchema.optional(),
   source: z.enum(["Google", "Instagram", "In-clinic", "Facebook", "Other"]),
   isVisible: z.boolean().default(true),
   displayOrder: z.coerce.number().int().min(0).default(0),
@@ -455,6 +458,69 @@ export const settingsSchema = z.object({
   invoicePrefix: z.string().trim().min(1).max(10),
   patientCodePrefix: z.string().trim().min(1).max(10),
   onlineBookingEnabled: z.boolean(),
+});
+
+/* -------------------------------------------------------------------------- */
+/* Website content: doctors, packages, gallery                                */
+/* -------------------------------------------------------------------------- */
+
+const slugSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(120)
+  .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and hyphens only");
+
+const seoSchema = z
+  .object({
+    title: z.string().trim().max(70, "Keep the SEO title under 70 characters").optional(),
+    description: z.string().trim().max(180, "Keep the SEO description under 180 characters").optional(),
+  })
+  .optional();
+
+export const doctorSchema = z.object({
+  fullName: nameSchema,
+  slug: slugSchema,
+  title: z.string().trim().min(2, "Enter a title, e.g. Aesthetic Physician").max(160),
+  qualifications: z.array(z.string().max(200)).default([]),
+  specialties: z.array(z.string().max(120)).default([]),
+  languages: z.array(z.string().max(60)).default([]),
+  bio: z.string().trim().min(10, "Write a short biography").max(5000),
+  photoUrl: imageRefSchema.optional(),
+  yearsExperience: z.coerce.number().int().min(0).max(80).optional(),
+  consultationFee: z.coerce.number().min(0).optional(),
+  isPublished: z.boolean(),
+  displayOrder: z.coerce.number().int().min(0).default(0),
+  seo: seoSchema,
+});
+
+export const packageSchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  slug: slugSchema,
+  description: z.string().trim().min(10, "Describe the package").max(3000),
+  items: z
+    .array(z.object({ serviceId: z.string(), serviceName: z.string(), sessions: z.number().int().min(1) }))
+    .min(1, "List at least one treatment"),
+  totalSessions: z.number().int().min(1),
+  price: z.coerce.number().min(0, "Enter a price"),
+  compareAtPrice: z.coerce.number().min(0).optional(),
+  validityDays: z.coerce.number().int().min(1).max(3650),
+  coverImageUrl: imageRefSchema.optional(),
+  isActive: z.boolean(),
+  isFeatured: z.boolean(),
+  displayOrder: z.coerce.number().int().min(0).default(0),
+  terms: z.string().trim().max(3000).optional(),
+});
+
+export const galleryItemSchema = z.object({
+  imageUrl: imageRefSchema.refine((v) => v !== "", "Upload or choose an image"),
+  altText: z.string().trim().min(3, "Describe the image for screen readers and search engines").max(200),
+  caption: z.string().trim().max(300).optional(),
+  category: z.string().trim().max(80).optional(),
+  linkUrl: z.string().trim().max(500).optional(),
+  isSocial: z.boolean(),
+  isVisible: z.boolean(),
+  displayOrder: z.coerce.number().int().min(0).default(0),
 });
 
 /* -------------------------------------------------------------------------- */

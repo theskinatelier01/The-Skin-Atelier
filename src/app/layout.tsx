@@ -43,6 +43,9 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/images/clinic/atelier.webp"] },
   manifest: "/manifest.webmanifest",
   formatDetection: { telephone: true, address: true },
+  verification: {
+    google: "AZrKb2g3_NKpLV39trSOfE5QUvBidITbMH1bBOZg88Q",
+  },
 };
 
 export const viewport: Viewport = {
